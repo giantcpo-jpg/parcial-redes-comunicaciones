@@ -1,0 +1,14 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL-Joomla
+    type: postgres
+    access: proxy
+    url: database:5432
+    user: postgres
+    secureJsonData:
+      password: postgres_password_123
+    database: joomladb
+    jsonData:
+      sslmode: "disable"
+      postgresVersion: 1600
