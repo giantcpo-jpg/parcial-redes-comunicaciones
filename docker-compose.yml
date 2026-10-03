@@ -29,6 +29,7 @@ services:
       JOOMLA_DB_NAME: ${POSTGRES_DB:-joomladb}
     volumes:
       - joomla_data:/var/www/html
+      - ./configuration.php:/var/www/html/configuration.php:ro
     depends_on:
       database:
         condition: service_healthy
@@ -45,6 +46,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
       - GF_SERVER_ROOT_URL=http://localhost/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
