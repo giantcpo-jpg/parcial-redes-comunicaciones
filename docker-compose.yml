@@ -27,12 +27,20 @@ services:
       JOOMLA_DB_USER: ${POSTGRES_USER:-joomlauser}
       JOOMLA_DB_PASSWORD: ${POSTGRES_PASSWORD:-joomlapassword}
       JOOMLA_DB_NAME: ${POSTGRES_DB:-joomladb}
+
+      JOOMLA_SITE_NAME: ${JOOMLA_SITE_NAME:-Sitio Institucional UMNG}
+      JOOMLA_ADMIN_USER: ${JOOMLA_ADMIN_USER:-Administrador UMNG}
+      JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME:-admin}
+      JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD:-AdminUMNG2026!!}
+      JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL:-admin@localhost.com}
+
     volumes:
       - joomla_data:/var/www/html
-      - ./configuration.php:/var/www/html/configuration.php:ro
+
     depends_on:
       database:
         condition: service_healthy
+
     networks:
       - frontend_net
       - backend_net
