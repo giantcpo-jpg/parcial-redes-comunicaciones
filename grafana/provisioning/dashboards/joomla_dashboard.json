@@ -8,9 +8,53 @@
   "panels": [
     {
       "id": 1,
-      "title": "Total de Tablas en la Base de Datos (PostgreSQL)",
+      "title": "Volumen de Actividad en el Tiempo (PostgreSQL)",
+      "type": "timeseries",
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "fillOpacity": 20
+          },
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT NOW() AS time, (SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public') AS registros_actividad;",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Registros de Actividad / Sesiones Activas en Joomla",
       "type": "stat",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 },
+      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*) AS registros_actividad FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE '%_session';",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Total de Tablas Creadas en la Base de Datos",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
       "datasource": { "type": "postgres", "uid": "PostgreSQL" },
       "targets": [
         {
@@ -19,24 +63,7 @@
           "format": "table",
           "rawQuery": true,
           "rawSql": "SELECT COUNT(*) AS total_tablas FROM information_schema.tables WHERE table_schema = 'public';",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "title": "Sesiones Activas en Joomla",
-      "type": "stat",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-      "datasource": { "type": "postgres", "uid": "PostgreSQL" },
-      "targets": [
-        {
-          "datasource": { "type": "postgres", "uid": "PostgreSQL" },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT COUNT(*) AS sesiones_activas FROM jos_session;",
-          "refId": "B"
+          "refId": "C"
         }
       ]
     }
@@ -44,10 +71,10 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": [],
+  "tags": ["joomla", "postgres", "autoprovision"],
   "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "Monitoreo Automatizado Joomla & PostgreSQL",
   "uid": "joomla-postgres-auto"
 }

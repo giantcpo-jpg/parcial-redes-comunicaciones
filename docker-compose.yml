@@ -3,45 +3,46 @@ services:
     image: postgres:16-alpine
     container_name: postgres_db
     restart: always
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_DB: joomladb
-      POSTGRES_USER: joomlauser
-      POSTGRES_PASSWORD: joomlapassword
+      POSTGRES_DB: ${POSTGRES_DB:-joomladb}
+      POSTGRES_USER: ${POSTGRES_USER:-joomlauser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-joomlapassword}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-joomlauser} -d ${POSTGRES_DB:-joomladb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
-      - app-network
+      - backend_net
 
   joomla:
     image: joomla:latest
     container_name: joomla_app
     restart: always
-    ports:
-      - "8081:80"
     environment:
       JOOMLA_DB_HOST: database
       JOOMLA_DB_TYPE: pgsql
-      JOOMLA_DB_USER: joomlauser
-      JOOMLA_DB_PASSWORD: joomlapassword
-      JOOMLA_DB_NAME: joomladb
+      JOOMLA_DB_USER: ${POSTGRES_USER:-joomlauser}
+      JOOMLA_DB_PASSWORD: ${POSTGRES_PASSWORD:-joomlapassword}
+      JOOMLA_DB_NAME: ${POSTGRES_DB:-joomladb}
     volumes:
       - joomla_data:/var/www/html
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     networks:
-      - app-network
+      - frontend_net
+      - backend_net
 
   grafana:
     image: grafana/grafana:latest
     container_name: grafana_app
     restart: always
-    ports:
-      - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-admin}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_SERVER_ROOT_URL=http://localhost/grafana/
@@ -50,19 +51,19 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
-      - app-network
+      - frontend_net
+      - backend_net
 
   jupyter:
     image: jupyter/scipy-notebook:latest
     container_name: jupyter_notebook
     restart: always
-    ports:
-      - "8888:8888"
     command: start-notebook.sh --ServerApp.token='' --ServerApp.password='' --ServerApp.base_url='/jupyter/' --ServerApp.disable_check_xsrf=True
     volumes:
-      - ./work:/home/jovyan/work
+      - ./jupyter/notebooks:/home/jovyan/work
     networks:
-      - app-network
+      - frontend_net
+      - backend_net
 
   nginx:
     image: nginx:alpine
@@ -77,7 +78,7 @@ services:
       - grafana
       - jupyter
     networks:
-      - app-network
+      - frontend_net
 
 volumes:
   pg_data:
@@ -85,5 +86,7 @@ volumes:
   joomla_data:
 
 networks:
-  app-network:
+  frontend_net:
+    driver: bridge
+  backend_net:
     driver: bridge
