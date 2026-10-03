@@ -1,37 +1,16 @@
 services:
   database:
-    image: mariadb:10.11
-    container_name: mariadb_db
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: joomladb
-      MYSQL_USER: joomlauser
-      MYSQL_PASSWORD: joomlapassword
-    volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - app-network
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana_app
+    image: postgres:16-alpine
+    container_name: postgres_db
     restart: always
     ports:
-      - "3000:3000"
+      - "5432:5432"
     environment:
-      # Credenciales de Administrador por defecto
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      # Permitir autenticación anónima como Admin
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=false
-      # Subruta limpia
-      - GF_SERVER_ROOT_URL=http://localhost/grafana/
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      POSTGRES_DB: joomladb
+      POSTGRES_USER: joomlauser
+      POSTGRES_PASSWORD: joomlapassword
     volumes:
-      - grafana_data:/var/lib/grafana
+      - pg_data:/var/lib/postgresql/data
     networks:
       - app-network
 
@@ -43,6 +22,7 @@ services:
       - "8081:80"
     environment:
       JOOMLA_DB_HOST: database
+      JOOMLA_DB_TYPE: pgsql
       JOOMLA_DB_USER: joomlauser
       JOOMLA_DB_PASSWORD: joomlapassword
       JOOMLA_DB_NAME: joomladb
@@ -50,6 +30,25 @@ services:
       - joomla_data:/var/www/html
     depends_on:
       - database
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SERVER_ROOT_URL=http://localhost/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
     networks:
       - app-network
 
@@ -81,10 +80,9 @@ services:
       - app-network
 
 volumes:
-  db_data:
+  pg_data:
   grafana_data:
   joomla_data:
-  jupyter_data:
 
 networks:
   app-network:
