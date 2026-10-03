@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="template" client="site" method="upgrade">
+    <name>umngportal</name>
+    <version>1.0.0</version>
+    <creationDate>2026-10-03</creationDate>
+
+    <author>Proyecto Comunicaciones UMNG</author>
+    <authorEmail>admin@localhost.com</authorEmail>
+
+    <copyright>
+        Universidad Militar Nueva Granada - Proyecto académico
+    </copyright>
+
+    <license>GNU General Public License version 2 or later</license>
+
+    <description>
+        Plantilla personalizada para el portal técnico del proyecto
+        multi-contenedor de Comunicaciones.
+    </description>
+
+    <inheritable>1</inheritable>
+
+    <files>
+        <filename>index.php</filename>
+        <filename>templateDetails.xml</filename>
+        <folder>css</folder>
+    </files>
+
+    <positions>
+        <position>top</position>
+        <position>main</position>
+        <position>footer</position>
+    </positions>
+</extension>

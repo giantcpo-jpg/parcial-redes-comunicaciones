@@ -33,9 +33,11 @@ services:
       JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME:-admin}
       JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD:-AdminUMNG2026!!}
       JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL:-admin@localhost.com}
+      JOOMLA_EXTENSIONS_PATHS: /opt/joomla-extensions/umngportal.zip
 
     volumes:
       - joomla_data:/var/www/html
+      - ./joomla/branding/umngportal.zip:/opt/joomla-extensions/umngportal.zip:ro
 
     depends_on:
       database:
@@ -43,6 +45,35 @@ services:
 
     networks:
       - frontend_net
+      - backend_net
+
+  joomla_template_init:
+    image: postgres:16-alpine
+    container_name: joomla_template_init
+    restart: "no"
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-joomladb}
+      POSTGRES_USER: ${POSTGRES_USER:-joomlauser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-joomlapassword}
+
+    volumes:
+      - ./joomla/activate-template.sh:/scripts/activate-template.sh:ro
+
+    command:
+      - sh
+      - -c
+      - |
+        sed 's/\r$//' /scripts/activate-template.sh > /tmp/activate-template.sh
+        sh /tmp/activate-template.sh
+
+    depends_on:
+      database:
+        condition: service_healthy
+      joomla:
+        condition: service_started
+
+    networks:
       - backend_net
 
   grafana:
@@ -84,9 +115,14 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - joomla
-      - grafana
-      - jupyter
+      joomla:
+        condition: service_started
+      joomla_template_init:
+        condition: service_completed_successfully
+      grafana:
+        condition: service_started
+      jupyter:
+        condition: service_started
     networks:
       - frontend_net
 
