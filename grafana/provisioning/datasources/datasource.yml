@@ -1,16 +1,25 @@
 apiVersion: 1
 
+deleteDatasources:
+  - name: PostgreSQL
+    orgId: 1
+
 datasources:
   - name: PostgreSQL
+    uid: PostgreSQL
     type: postgres
     access: proxy
     url: database:5432
     user: joomlauser
+    orgId: 1
+
     secureJsonData:
       password: "joomlapassword"
+
     jsonData:
       database: joomladb
       sslmode: "disable"
       postgresVersion: 1600
+
     isDefault: true
     editable: false
