@@ -96,12 +96,33 @@ services:
       - backend_net
 
   jupyter:
-    image: jupyter/scipy-notebook:latest
+    build:
+      context: ./jupyter
+      dockerfile: Dockerfile
     container_name: jupyter_notebook
     restart: always
-    command: start-notebook.sh --ServerApp.token='' --ServerApp.password='' --ServerApp.base_url='/jupyter/' --ServerApp.disable_check_xsrf=True
+
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-joomladb}
+      POSTGRES_USER: ${POSTGRES_USER:-joomlauser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-joomlapassword}
+
+    command: >
+      start-notebook.sh
+      --ServerApp.token=''
+      --ServerApp.password=''
+      --ServerApp.base_url='/jupyter/'
+      --ServerApp.disable_check_xsrf=True
+
     volumes:
       - ./jupyter/notebooks:/home/jovyan/work
+
+    depends_on:
+      database:
+        condition: service_healthy
+
     networks:
       - frontend_net
       - backend_net
